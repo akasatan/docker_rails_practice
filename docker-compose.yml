@@ -1,0 +1,30 @@
+version: '3'
+# 2つのサービス(dbとweb)を定義する
+services:
+  db:
+    image: mysql:8.0
+    # mysqlの8.0から認証形式が変わったのでその設定
+    command:  --default-authentication-plugin=mysql_native_password
+    volumes:
+      # ローカル:Dockerでsqlのデータを同期する設定
+      # コンテナを削除してもデータを引継ぎが出来る
+      - ./src/db/mysql_data:/var/lib/mysql
+    # 環境変数の設定
+    environment:
+      # mysqlはパスワードが無いとエラーになるので設定
+      MYSQL_ROOT_PASSWORD: password
+  # webというサービスがrailsを示している
+  web:
+    # 参照先
+    build: .
+    # rails s でポートは3000、バインドはどこでもOKと設定
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    # 同期設定
+    volumes:
+      - ./src:/app
+    ports:
+      - "3000:3000"
+    # webサービスはdbサービスに"依存"しているという記述
+    # これを記述するとIPアドレスを指定せずdbと書けば接続出来る
+    depends_on:
+      - db
