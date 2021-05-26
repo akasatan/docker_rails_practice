@@ -14,6 +14,7 @@ COPY ./src /app
 RUN bundle config --local set path 'vendor/bundle' \
   && bundle install
 
+# 以下追記
 COPY start.sh /start.sh
 RUN chmod 744 /start.sh
 CMD ["sh", "/start.sh"]
